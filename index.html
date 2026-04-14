@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Filter Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: #f4f7f6;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2d3436; margin-top: 0; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #636e72; }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #dfe6e9;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        textarea { height: 150px; resize: vertical; }
+        button {
+            background-color: #0984e3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #74b9ff; }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f2f6;
+            border-radius: 6px;
+            border: 1px solid #dfe6e9;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .count { font-weight: bold; color: #0984e3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔗 Link Extractor</h1>
+    
+    <label for="prefix">Filter by Prefix (e.g., youtube.com/)</label>
+    <input type="text" id="prefix" placeholder="Enter the starting part of the link..." value="youtube.com/">
+
+    <label for="source">Paste Content Here (HTML or Text)</label>
+    <textarea id="source" placeholder="Paste the text or HTML code you want to scan..."></textarea>
+
+    <button onclick="extractLinks()">Find Links</button>
+
+    <h3>Results <span id="linkCount" class="count"></span></h3>
+    <div id="results">Your filtered links will appear here...</div>
+</div>
+
+<script>
+    function extractLinks() {
+        const prefix = document.getElementById('prefix').value.trim();
+        const source = document.getElementById('source').value;
+        const resultsDiv = document.getElementById('results');
+        const countSpan = document.getElementById('linkCount');
+
+        if (!prefix) {
+            alert("Please enter a prefix to search for.");
+            return;
+        }
+
+        // Regex to find things that look like URLs
+        const urlRegex = /(https?:\/\/[^\s"<>]+|[a-zA-Z0-9.-]+\.[a-z]{2,}[^\s"<>]*)/g;
+        const matches = source.match(urlRegex) || [];
+        
+        // Filter links that start with or contain the prefix
+        // We check for both "http" versions and raw versions
+        const filtered = [...new Set(matches.filter(link => {
+            const cleanLink = link.replace(/^(https?:\/\/)?(www\.)?/, '');
+            const cleanPrefix = prefix.replace(/^(https?:\/\/)?(www\.)?/, '');
+            return cleanLink.startsWith(cleanPrefix);
+        }))];
+
+        if (filtered.length > 0) {
+            resultsDiv.textContent = filtered.join('\n');
+            countSpan.textContent = `(${filtered.length} found)`;
+        } else {
+            resultsDiv.textContent = "No matching links found.";
+            countSpan.textContent = "(0)";
+        }
+    }
+</script>
+
+</body>
+</html>
